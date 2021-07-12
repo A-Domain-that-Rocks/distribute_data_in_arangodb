@@ -12,7 +12,7 @@ LET all_authors_unformatted = (
         FOR doc IN dblp
 //            LIMIT 4000000
             FILTER doc[ptype].author != null
-            RETURN UNIQUE(doc[ptype].author)
+            RETURN doc[ptype].author
 )
 
 LET all_authors_formatted_mixed = (
@@ -22,15 +22,16 @@ LET all_authors_formatted_mixed = (
 )
 
 LET all_authors_formatted_with_orcid = (
-    FOR author_with_orcid in all_authors_formatted_mixed
+    FOR author_with_orcid IN all_authors_formatted_mixed
         FILTER author_with_orcid.author_data["@orcid"] != null
         RETURN { name: author_with_orcid.author_data["#text"], orcid: author_with_orcid.author_data["@orcid"] }
 )
 
 LET all_authors_formatted_without_orcid = (
-    FOR author_without_orcid in all_authors_formatted_mixed
-        FILTER author_without_orcid.author_data["@orcid"] == null
-        RETURN { name: author_without_orcid.author_data, orcid: ""}
+    FOR author_mixed IN all_authors_formatted_mixed
+        FOR author_with_orcid IN all_authors_formatted_with_orcid
+            FILTER author_mixed.author_data["@orcid"] == null AND author_mixed.author_data != author_with_orcid.name
+            RETURN { name: author_mixed.author_data, orcid: ""}
 )
 
 LET all_authors_formatted = (

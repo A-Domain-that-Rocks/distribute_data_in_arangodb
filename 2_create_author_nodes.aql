@@ -43,3 +43,6 @@ LET all_authors_formatted = (
 
 FOR author_to_add IN all_authors_formatted[0]
     INSERT { name: author_to_add.name} INTO author
+
+FOR a IN author
+    UPDATE a WITH { orcid: "", bibtex: "", aux: "" } IN author

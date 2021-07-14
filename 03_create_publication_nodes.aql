@@ -55,8 +55,6 @@ FOR pub IN publication
     //LIMIT 50
     UPDATE pub WITH { author: array_of_authors } IN publication
 
-// TODO To correct [author array], [editor array], [url array] etc...
-
 FOR pub IN publication
     LET array_of_editors = [pub.editor]
     FILTER pub.editor != null

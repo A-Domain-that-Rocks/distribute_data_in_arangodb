@@ -51,3 +51,9 @@ FOR pub IN publication
 FOR pub IN publication
     FILTER pub.publisher == []
     UPDATE pub WITH { publisher: "" } IN publication
+
+// manually remove the few duplicates, those without urls
+FOR pub1 IN publisher
+    FOR pub2 IN publisher
+        FILTER pub1.name == pub2.name AND pub1["_key"] != pub2["_key"]
+        RETURN { pub1, pub2 }

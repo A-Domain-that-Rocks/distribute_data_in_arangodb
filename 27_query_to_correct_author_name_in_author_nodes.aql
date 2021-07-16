@@ -13,9 +13,9 @@ FOR correction IN all_name_corrections
 
 FOR corrections IN all_name_corrections
     FOR a IN author
-        FILTER a.author == corrections.is_now OR a.author == corrections.will_become
-        UPDATE a WITH { author: corrections.will_become, other_names: corrections.other_names } IN author
+        FILTER a.name == corrections.is_now OR a.name == corrections.will_become
+        UPDATE a WITH { name: corrections.will_become, other_names: corrections.other_names } IN author
 
 FOR a IN author
-    FILTER other_names == null
+    FILTER a.other_names == null
     UPDATE a WITH { other_names: [] } IN author

@@ -69,6 +69,33 @@ FOR pub IN publication
     FILTER pub.ee == null
     UPDATE pub WITH { ee: [] } IN publication
 
+// done executed
+FOR pub IN publication
+    FILTER pub.ee != null AND pub.ee != "" AND pub.ee != [] AND IS_ARRAY(pub.ee) AND LENGTH(pub.ee) == 1 AND IS_OBJECT(pub.ee[0])
+    UPDATE pub WITH { ee: [ { type: pub.ee[0]["@type"], value: pub.ee[0]["#text"] } ] } IN publication
+
+// done executed
+FOR pub IN publication
+    FILTER pub.ee != null AND pub.ee != "" AND pub.ee != [] AND IS_ARRAY(pub.ee) AND LENGTH(pub.ee) == 1 AND IS_STRING(pub.ee[0])
+    UPDATE pub WITH { ee: [ { type: "", value: pub.ee[0] } ] } IN publication
+
+// todo length > 1 objects and texts and execution
+FOR pub IN publication
+    FILTER pub.ee != null AND IS_ARRAY(pub.ee) AND LENGTH(pub.ee) > 1
+    LET string_ee = (
+        FOR el1 IN pub.ee
+            FILTER IS_STRING(el1)
+            RETURN { type: "", value: el1 }
+    )
+    LET object_ee = (
+        FOR el2 IN pub.ee
+            FILTER IS_OBJECT(el2) AND el2["#text"] != null
+            RETURN { type: el2["@type"], value: el2["#text"] }
+    )
+    
+    LET all_ee = UNION(string_ee, object_ee)
+    UPDATE pub WITH { ee: all_ee } IN publication
+
 // @cdate correction to type of ""
 FOR pub IN publication
     FILTER pub["@cdate"] == null

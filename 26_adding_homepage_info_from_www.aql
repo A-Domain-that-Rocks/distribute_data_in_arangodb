@@ -724,3 +724,35 @@ FOR el IN author_affiliation_data
             RETURN { address: the_url, label: "" }
     )
     UPDATE el WITH { url: urls_to_add } IN author_affiliation_data
+
+
+
+
+FOR inp IN homepages_temp
+    FOR a IN author
+        FILTER inp.author != null
+           AND IS_ARRAY(inp.author)
+           AND LENGTH(inp.author) == 1
+           AND inp.author[0] == a.name
+           AND inp["@key"] != null AND inp["@key"] != ""
+           AND inp.pub_type == "www"
+           AND inp.title == "Home Page"
+           AND ( a.url == null OR (IS_ARRAY(a.url) AND LENGTH(a.url) == 0))
+        UPDATE a WITH { "url": [ { "address": inp["@key"], "label": "Home Page" } ] } IN author
+
+LET to_delete = UNIQUE(FLATTEN(
+    FOR inp IN homepages_temp
+        FOR a IN author
+            FILTER inp.author != null
+               AND IS_ARRAY(inp.author)
+               AND LENGTH(inp.author) == 1
+               AND inp.author[0] == a.name
+               AND inp["@key"] != null AND inp["@key"] != ""
+               AND inp.pub_type == "www"
+               AND inp.title == "Home Page"
+               AND ( a.url == null OR (IS_ARRAY(a.url) AND LENGTH(a.url) == 1))
+            RETURN inp["_key"]
+))
+FOR d IN to_delete
+    REMOVE { _key: d } IN homepages_temp
+

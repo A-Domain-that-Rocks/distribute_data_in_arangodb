@@ -79,7 +79,7 @@ FOR pub IN publication
     FILTER pub.ee != null AND pub.ee != "" AND pub.ee != [] AND IS_ARRAY(pub.ee) AND LENGTH(pub.ee) == 1 AND IS_STRING(pub.ee[0])
     UPDATE pub WITH { ee: [ { type: "", value: pub.ee[0] } ] } IN publication
 
-// todo length > 1 objects and texts and execution
+// done executed
 FOR pub IN publication
     FILTER pub.ee != null AND IS_ARRAY(pub.ee) AND LENGTH(pub.ee) > 1
     LET string_ee = (

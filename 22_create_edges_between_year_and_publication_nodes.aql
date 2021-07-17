@@ -1,1 +1,14 @@
-// TODO
+// AQL query to execute IN arangodb QUERIES
+// or /usr/bin/arangosh on DB host machine
+// to create edges between year and publication nodes
+
+FOR pub IN publication
+    FOR y IN year
+        FILTER pub.year != "" AND pub.year == y.number
+        INSERT { _from:             pub._id,
+                 _to:               y._id,
+                 label:             "publication_is_published_in_year",
+                 year:              y.number,
+                 publication_title: pub.title,
+                 first_author:      pub.author[0],
+                 weight:            4 } INTO "year-publication"

@@ -756,3 +756,120 @@ LET to_delete = UNIQUE(FLATTEN(
 FOR d IN to_delete
     REMOVE { _key: d } IN homepages_temp
 
+FOR pub IN publication_bloat_temp
+    FILTER pub.url != null AND IS_ARRAY(pub.url) AND LENGTH(pub.ee) > 1
+    LET string_ee = (
+        FOR el1 IN pub.ee
+            FILTER IS_STRING(el1)
+            RETURN { type: "", value: el1 }
+    )
+    LET object_ee = (
+        FOR el2 IN pub.ee
+            FILTER IS_OBJECT(el2) AND el2["#text"] != null
+            RETURN { type: el2["@type"], value: el2["#text"] }
+    )
+    
+    LET all_ee = UNION(string_ee, object_ee)
+    UPDATE pub WITH { ee: all_ee } IN publication
+
+
+
+
+FOR pub IN homepages_bloat_temp
+    FILTER pub.url != null AND pub.url != [] AND LENGTH(pub.url) > 0
+    LET string_url = (
+        FOR el1 IN pub.url
+            FILTER IS_STRING(el1)
+            RETURN { label: "", address: el1 }
+    )
+    LET object_url = (
+        FOR el2 IN pub.url
+            FILTER IS_OBJECT(el2) AND el2["#text"] != null
+            RETURN { label: el2["@type"], address: el2["#text"] }
+    )
+    LET all_url = UNION(string_url, object_url)
+    INSERT { author: pub.author, url: all_url } INTO new_urls_for_authors
+
+FOR a1 IN new_urls_for_authors
+    FOR a2 IN author
+        FILTER a1.author[0] == a2.name
+        LET a1_urls = a1.url
+        LET a2_urls = a2.url == null ? [] : a2.url
+        FILTER a1_urls != a2_urls
+        LET all_url = UNION(a1_urls, a2_urls)
+        UPDATE a2 WITH { url: all_url } IN author
+
+FOR pub IN homepages_bloat_temp
+    FILTER pub.url != null AND pub.url != [] AND LENGTH(pub.url) > 0
+    UPDATE pub WITH { url: null } in homepages_bloat_temp OPTIONS { keepNull: false }
+
+FOR a1 IN new_urls_for_authors
+    FOR a2 IN author
+        FILTER a1.author[0] == a2.name
+        LET a1_urls = a1.url
+        LET a2_urls = a2.url == null ? [] : a2.url
+        FILTER a1_urls != a2_urls
+        LET all_url = UNION(a1_urls, a2_urls)
+        UPDATE a2 WITH { url: all_url } IN author
+
+FOR pub IN homepages_bloat_temp
+    FOR a IN author
+        FILTER pub["kind"] != null AND pub.author[0] == a.name
+        LET pub_urls = [ { "label": pub.title, "address": pub["@key"] } ]
+        LET a_urls = a.url == null ? [] : a.url
+        FILTER pub_urls != a_urls
+        LET all_url = UNION(pub_urls, a_urls)
+        UPDATE a WITH { url: all_url, kind: "group" } IN author
+
+FOR pub IN homepages_bloat_temp
+    FILTER pub["kind"] != null
+    REMOVE pub IN homepages_bloat_temp
+
+FOR pub IN homepages_bloat_temp
+    FOR a IN author
+        FILTER pub.author[0] == a.name
+        LET pub_urls = [ { "label": pub.title, "address": pub["@key"] } ]
+        LET a_urls = a.url == null ? [] : a.url
+        FILTER pub_urls != a_urls
+        LET all_url = UNION(pub_urls, a_urls)
+        UPDATE a WITH { url: all_url } IN author
+
+FOR aff IN author_affiliation_data
+    LET aff_urls = aff.url  == null ? [] : aff.url
+    LET aff_homepage = [ { address: aff["@key"], label: (aff.title == null ? "" : aff.title) } ]
+    FOR a IN author
+        FILTER aff.author[0] == a.name
+        LET a_urls = (a.url == null ? [] : a.url)
+        LET all_url = FLATTEN(UNION(aff_urls, aff_homepage, a_urls))
+        UPDATE a WITH { url: all_url,
+                       kind: ((aff["@publtype"] != null AND aff["@publtype"] == "group") ? "group" : null) } IN author OPTIONS { keepNull: false }
+
+FOR aff IN author_award_data
+    LET aff_urls = aff.url  == null ? [] : aff.url
+    LET aff_homepage = [ { address: aff["@key"], label: (aff.title == null ? "" : aff.title) } ]
+    FOR a IN author
+        FILTER aff.author[0] == a.name
+        LET a_urls = (a.url == null ? [] : a.url)
+        LET all_url = FLATTEN(UNION(aff_urls, aff_homepage, a_urls))
+        UPDATE a WITH { url: all_url } IN author
+
+FOR a IN author
+    FILTER a.url != null AND a.url != [] AND LENGTH(a.url) > 0
+    LET string_url = (
+        FOR u IN a.url
+            FILTER IS_STRING(u)
+            RETURN { address: u, label: "" }
+    )
+    LET object_url_bad_format = (
+        FOR u IN a.url
+            FILTER IS_OBJECT(u) AND u.address == null
+            RETURN { address: u["#text"], label: (u["@type"] == null ? "" : u["@label"]) }
+    )
+    LET object_url_good_format = (
+        FOR u IN a.url
+            FILTER IS_OBJECT(u) AND u.address != null
+            RETURN u
+    )
+    LET all_url = UNIQUE(UNION(string_url, object_url_bad_format, object_url_good_format))
+    UPDATE a WITH { url: all_url } IN author
+    

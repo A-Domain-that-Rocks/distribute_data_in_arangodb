@@ -19,3 +19,6 @@ FOR pub IN publication
 
 FOR pub IN publication
     UPDATE pub WITH { affiliation: null } IN publication OPTIONS { keepNull: false }
+
+FOR aff IN affiliation_institution
+    UPDATE aff WITH { name: aff.value, value: null } IN affiliation_institution OPTIONS { keepNull: false }

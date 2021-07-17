@@ -1,1 +1,17 @@
-// TODO
+// AQL query to execute IN arangodb QUERIES
+// or /usr/bin/arangosh on DB host machine
+// to create edges between author and publication nodes
+
+FOR pub IN publication
+    FOR a IN author
+        FILTER LENGTH(pub.author) > 0
+        FOR auth IN pub.author
+            FILTER auth == a.name
+            INSERT { _from:             a._id,
+                    _to:               pub._id, 
+                    label:             "publication_is_written_by_author",
+                    author_name:       a.name,
+                    publication_title: pub.title,
+                    publication_year:  pub.year,
+                    first_author:      pub.author[0] == null ? "" : pub.author[0],
+                    weight:            10 } INTO "author-publication"

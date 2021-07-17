@@ -1,0 +1,15 @@
+// AQL query to execute IN arangodb QUERIES
+// or /usr/bin/arangosh on DB host machine
+// to create edges between affiliation_institution and author nodes
+
+FOR auth IN author
+    FOR inst IN affiliation_institution
+        FILTER auth.affiliation != null AND LENGTH(auth.affiliation) > 0
+        FOR aff IN auth.affiliation
+            FILTER aff == inst.name
+            INSERT { _from:             auth._id,
+                    _to:               inst._id, 
+                    label:             "author_affiliated_to_institution",
+                    author_name:       auth.name,
+                    institution:       inst.name,
+                    weight:            8 } INTO "affiliation_institution-author"

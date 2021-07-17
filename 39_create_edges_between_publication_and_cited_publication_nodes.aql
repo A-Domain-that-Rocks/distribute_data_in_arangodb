@@ -1,0 +1,3 @@
+// AQL query to execute IN arangodb QUERIES
+// or /usr/bin/arangosh on DB host machine
+// to create edges between publication and cited publications nodes

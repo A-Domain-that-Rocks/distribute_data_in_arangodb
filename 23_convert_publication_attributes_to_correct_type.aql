@@ -228,3 +228,7 @@ FOR pub IN publication
     FILTER pub.url != null AND IS_OBJECT(pub.url)
     LET u = [pub.url]
     UPDATE pub WITH { url: u } IN publication
+
+FOR pub IN publication
+    FILTER IS_ARRAY(pub.pages) AND LENGTH(pub.pages) > 0
+    UPDATE pub WITH { pages: pub.pages[0] } IN publication

@@ -1,0 +1,15 @@
+// AQL query to execute IN arangodb QUERIES
+// or /usr/bin/arangosh on DB host machine
+// to create edges between series and publication nodes
+
+FOR pub IN publication
+    FOR s IN series
+        FILTER pub.series != "" AND pub.series == s.name
+        INSERT { _from:             pub._id,
+                 _to:               s._id, 
+                 label:             "publication_is_in_series",
+                 saries_name:       s.name,
+                 publication_title: pub.title,
+                 publication_year:  pub.year,
+                 first_author:      pub.author[0] == null ? "" : pub.author[0],
+                 weight:            5 } INTO "series-publication"

@@ -87,3 +87,11 @@ FOR pub IN publication
             RETURN c
     )
     UPDATE pub WITH { cite: good_cites } IN publication
+
+FOR pub IN publication
+    FILTER pub.cite != null AND pub.cite != "" AND pub.cite != [] AND IS_ARRAY(pub.cite) AND LENGTH(pub.cite) > 0
+    LET good_cites = UNIQUE(FLATTEN(
+        FOR c IN pub.cite
+            RETURN c.value
+    ))
+    UPDATE pub WITH { cite: good_cites } IN publication

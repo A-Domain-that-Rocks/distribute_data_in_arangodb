@@ -13,3 +13,6 @@ FOR pub IN publication
                  publication_year:  pub.year,
                  first_author:      pub.author[0] == null ? "" : pub.author[0],
                  weight:            6 } INTO "journal-publication"
+
+FOR jou IN journal
+    UPDATE jou WITH { graph_name: jou.name } IN journal

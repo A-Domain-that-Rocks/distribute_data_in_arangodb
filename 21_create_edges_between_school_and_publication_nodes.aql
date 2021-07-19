@@ -4,14 +4,15 @@
 
 FOR pub IN publication
     FOR s IN school
-        FILTER pub.school != null AND IS_ARRAY(pub.school) AND LENGTH(pub.school) > 0
-        FOR sch IN pub.school
-            FILTER sch != null AND IS_STRING(sch) AND sch == s.name
-            INSERT { _from:            pub._id,
-                     _to:               s._id, 
-                     label:             "publication_is_related_to_school",
-                     school_name:       s.name,
-                     publication_title: pub.title,
-                     publication_year:  pub.year,
-                     first_author:      pub.author[0] == null ? "" : pub.author[0],
-                     weight:            7 } INTO "school-publication"
+        FILTER pub.school != null AND IS_ARRAY(pub.school) AND LENGTH(pub.school) > 0 AND s.name IN pub.school
+        INSERT { _from:            pub._id,
+                    _to:               s._id, 
+                    label:             "publication_is_related_to_school",
+                    school_name:       s.name,
+                    publication_title: pub.title,
+                    publication_year:  pub.year,
+                    first_author:      pub.author[0] == null ? "" : pub.author[0],
+                    weight:            7 } INTO "school-publication"
+
+FOR sch IN school
+    UPDATE sch WITH { graph_name: sch.name } IN school

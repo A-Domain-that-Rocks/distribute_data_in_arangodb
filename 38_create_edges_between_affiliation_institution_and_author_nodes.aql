@@ -2,14 +2,36 @@
 // or /usr/bin/arangosh on DB host machine
 // to create edges between affiliation_institution and author nodes
 
-FOR auth IN author
-    FOR inst IN affiliation_institution
-        FILTER auth.affiliation != null AND LENGTH(auth.affiliation) > 0
+// FOR auth IN author
+//     FOR inst IN affiliation_institution
+//         FILTER auth.affiliation != null AND LENGTH(auth.affiliation) > 0
+//         FOR aff IN auth.affiliation
+//             FILTER aff == inst.name
+//             INSERT { _from:             auth._id,
+//                     _to:               inst._id, 
+//                     label:             "author_affiliated_to_institution",
+//                     author_name:       auth.name,
+//                     institution:       inst.name,
+//                     weight:            8 } INTO "affiliation_institution-author"
+
+LET author_affs = (
+    FOR auth IN author
+        FILTER auth.affiliation != null AND IS_ARRAY(auth.affiliation) AND LENGTH(auth.affiliation) > 0
         FOR aff IN auth.affiliation
-            FILTER aff == inst.name
-            INSERT { _from:             auth._id,
-                    _to:               inst._id, 
-                    label:             "author_affiliated_to_institution",
-                    author_name:       auth.name,
-                    institution:       inst.name,
-                    weight:            8 } INTO "affiliation_institution-author"
+            RETURN { affiliation_name: aff.value,
+                     author_id:        auth._id,
+                     author_name:      auth.name }
+)
+FOR aff IN author_affs
+    FOR inst IN affiliation_institution
+        FILTER inst.name == aff.affiliation_name
+        INSERT { _from:             aff.author_id,
+                _to:               inst._id, 
+                label:             "author_affiliated_to_institution",
+                author_name:       aff.author_name,
+                institution:       inst.name,
+                weight:            8 } INTO "affiliation_institution-author"
+
+
+FOR aff IN affiliation_institution
+    UPDATE aff WITH { graph_name: aff.name } IN affiliation_institution

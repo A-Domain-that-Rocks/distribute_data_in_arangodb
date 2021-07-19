@@ -2,16 +2,35 @@
 // or /usr/bin/arangosh on DB host machine
 // to create edges between author and publication nodes
 
+// FOR pub IN publication
+//     FOR a IN author
+//         FILTER LENGTH(pub.author) > 0
+//         FOR auth IN pub.author
+//             FILTER auth == a.name
+//             INSERT { _from:             a._id,
+//                      _to:               pub._id, 
+//                      label:             "publication_is_written_by_author",
+//                      author_name:       a.name,
+//                      publication_title: pub.title,
+//                      publication_year:  pub.year,
+//                      first_author:      pub.author[0] == null ? "" : pub.author[0],
+//                      weight:            10 } INTO "author-publication"
+
+
 FOR pub IN publication
     FOR a IN author
-        FILTER LENGTH(pub.author) > 0
-        FOR auth IN pub.author
-            FILTER auth == a.name
-            INSERT { _from:             a._id,
-                    _to:               pub._id, 
-                    label:             "publication_is_written_by_author",
-                    author_name:       a.name,
-                    publication_title: pub.title,
-                    publication_year:  pub.year,
-                    first_author:      pub.author[0] == null ? "" : pub.author[0],
-                    weight:            10 } INTO "author-publication"
+        FILTER LENGTH(pub.author) > 0 AND a.name IN pub.author
+        INSERT { _from:             a._id,
+                _to:               pub._id, 
+                label:             "publication_is_written_by_author",
+                author_name:       a.name,
+                publication_title: pub.title,
+                publication_year:  pub.year,
+                first_author:      pub.author[0] == null ? "" : pub.author[0],
+                weight:            10 } INTO "author-publication"
+
+FOR pub IN publication
+    UPDATE pub WITH { graph_name: pub.title } IN publication
+
+FOR aut IN author
+    UPDATE aut WITH { graph_name: aut.name } IN author

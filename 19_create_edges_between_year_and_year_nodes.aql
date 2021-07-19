@@ -22,3 +22,6 @@ FOR y1 IN year
                  year:           y1.number,
                  previous_year:  y2.number,
                  weight:         1 } INTO "year-year"
+
+FOR yea IN year
+    UPDATE yea WITH { graph_name: yea.number } IN year

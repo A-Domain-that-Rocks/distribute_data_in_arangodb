@@ -1,3 +1,17 @@
 // AQL query to execute IN arangodb QUERIES
 // or /usr/bin/arangosh on DB host machine
 // to create edges between publication and other crossref-fed publication nodes
+
+FOR pub1 IN publication
+    FOR pub2 IN publication
+        FILTER pub2.crossref != null AND pub2.crossref != "" AND pub1["@key"] == pub2.crossref
+        INSERT { _from:            pub2._id,
+                _to:               pub1._id, 
+                label:             "publication_has_crossreffed_publication",
+                publication_title: pub2.title,
+                publication_year:  pub2.year,
+                first_author:      pub2.author[0] == null ? "" : pub2.author[0],
+                crossreffed_publication_title: pub1.title,
+                crossreffed_publication_year:  pub1.year,
+                crossreffed_first_author:      pub1.author[0] == null ? "" : pub1.author[0],
+                weight:            9 } INTO "publication-publication_crossref"

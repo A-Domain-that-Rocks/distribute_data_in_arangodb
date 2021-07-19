@@ -1,3 +1,17 @@
 // AQL query to execute IN arangodb QUERIES
 // or /usr/bin/arangosh on DB host machine
 // to create edges between publication and cited publications nodes
+
+FOR pub1 IN publication
+    FOR pub2 IN publication
+        FILTER LENGTH(pub2.cite) > 0 AND pub1["@key"] IN pub2.cite
+        INSERT { _from:            pub2._id,
+                _to:               pub1._id, 
+                label:             "publication_has_cited_publication",
+                publication_title: pub2.title,
+                publication_year:  pub2.year,
+                first_author:      pub2.author[0] == null ? "" : pub2.author[0],
+                cited_publication_title: pub1.title,
+                cited_publication_year:  pub1.year,
+                cited_first_author:      pub1.author[0] == null ? "" : pub1.author[0],
+                weight:            9 } INTO "publication-publication_cited"

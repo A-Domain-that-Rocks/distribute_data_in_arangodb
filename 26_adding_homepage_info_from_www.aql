@@ -144,7 +144,7 @@ FOR auth IN homepages_temp
         FILTER a.name == auth.author
         REMOVE auth IN homepages_temp
 
-// Counting appereances of first and second name in publications
+// Counting appearances of first and second name in publications
 FOR auth IN homepages_temp
     FILTER LENGTH(auth.author) == 2
     LET first_name = COUNT(

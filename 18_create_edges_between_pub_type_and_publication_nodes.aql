@@ -16,3 +16,15 @@ FOR pub IN publication
 
 FOR pub IN pub_type
     UPDATE pub WITH { graph_name: pub.name } IN pub_type
+
+FOR pub IN publication
+    FOR p IN pub_type
+        FILTER pub.pub_type != "" AND pub.pub_type == p.name
+        INSERT { _from:             p._id,
+                _to:               pub._id, 
+                label:             "type_has_publication",
+                publication_type:  pub.pub_type,
+                publication_title: pub.title,
+                publication_year:  pub.year,
+                first_author:      pub.author[0] == null ? "" : pub.author[0],
+                weight:            3 } INTO "pub_type-publication"

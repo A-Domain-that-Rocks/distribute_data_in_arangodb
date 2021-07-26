@@ -83,17 +83,17 @@ LET all_possible_attributes = UNIQUE(
          RETURN attr
 )
 
-// LET total_appereances_of_attr = (
+// LET total_appearances_of_attr = (
 //     FOR at IN all_possible_attributes[*]
-//         LET number_of_appereances_for_this_attr = LENGTH(
+//         LET number_of_appearances_for_this_attr = LENGTH(
 //             FOR doc IN publication
 //                 FILTER doc[at] != null AND IS_ARRAY(doc[at])
 //                 RETURN doc
 //         )
-//         RETURN { attribute: at, total_appereances: number_of_appereances_for_this_attr}
+//         RETURN { attribute: at, total_appearances: number_of_appearances_for_this_attr}
 // )
 //
-// RETURN total_appereances_of_attr
+// RETURN total_appearances_of_attr
 
 LET average_length_of_attr = (
     FOR at IN all_possible_attributes
@@ -102,7 +102,7 @@ LET average_length_of_attr = (
                 FILTER pub[at] != null AND IS_ARRAY(pub[at])
                 RETURN LENGTH(pub[at])
         )
-        RETURN { attribute: at, average_appereances: average_length }
+        RETURN { attribute: at, average_appearances: average_length }
 )
 
 RETURN average_length_of_attr
